@@ -34,7 +34,7 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
         if twin: self.long_name += ' II'
         self.persona = 'bland'
         self.voice_info = {'Chrome': 10, 'Firefox': 2, 'other': 0}
-        self.playing = "don't know yet" # e.g., "X" or "O".
+        self.playing = "X" # e.g., "X" or "O". X - ID = 0, O - ID = 1
 
     def introduce(self):
         intro = '\nMy name is Templatus Skeletus.\n'+\
@@ -100,7 +100,40 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
         print('calling staticEval. Its value needs to be computed!')
         # Values should be higher when the states are better for X,
         # lower when better for O.
+        
         return 0
+    
+    # getAll States
+    # getNextState based on action: how to do this?????? for success, action in successors_and_moves(state):
+    # get all actions
+    # use game_types change_turn function
+    # define your own agentID
+def other(p):
+    if p=='X': return 'O'
+    return 'X'
+def do_move(state, i, j, o):
+    news = Game_Type.State(old=state)
+    news.board[i][j] = state.whose_move
+    news.whose_move = o
+    return news
+def successors_and_moves(state):
+    b = state.board
+    p = state.whose_move
+    o = other(p)
+    new_states = []
+    moves = []
+    mCols = len(b[0])
+    nRows = len(b)
+
+    for i in range(nRows):
+        for j in range(mCols):
+            if b[i][j] != ' ': continue
+            news = do_move(state, i, j, o)
+            new_states.append(news)
+            moves.append([i, j])
+    return [new_states, moves]
+
+   
  
 # OPTIONAL THINGS TO KEEP TRACK OF:
 
