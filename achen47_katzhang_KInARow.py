@@ -127,7 +127,7 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
                 currV = self.value(successor, depth + 1 , alpha, beta, 0)
                 v = min(v, currV)
             else: # still has ghosts left, so we need to explore the next ghost
-                currV = self.value(successor, depth, alpha, beta, agentID + 1) 
+                currV = self.value(successor, depth, alpha, beta, 1) 
                 v = min(v, currV)
             if v < alpha:
                 return v
@@ -136,7 +136,7 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
  
     def staticEval(self, state):
         print('calling staticEval. Its value needs to be computed!')
-        # Values should be higher when the states are better for X,
+        # Values should be higher when the states are better for X,+
         # lower when better for O.
         
         return 0
