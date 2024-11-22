@@ -1,6 +1,6 @@
 '''
-<yourUWNetID>_KInARow.py
-Authors: <your name(s) here, lastname first and partners separated by ";">
+achen47_katzhang_KInARow.py
+Authors: Chen, Ailsa; Zhang, Katharine
   Example:  
     Authors: Smith, Jane; Lee, Laura
 
@@ -16,7 +16,7 @@ TO PROVIDE A GOOD STRUCTURE FOR YOUR IMPLEMENTATION.
 from agent_base import KAgent
 from game_types import State, Game_Type
 
-AUTHORS = 'Jane Smith and Laura Lee' 
+AUTHORS = 'Ailsa Chen and Katharine Zhang' 
 
 import time # You'll probably need this to avoid losing a
  # game due to exceeding a time limit.
@@ -52,13 +52,25 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
         opponent_nickname,
         expected_time_per_move = 0.1, # Time limits can be
                                       # changed mid-game by the game master.
-        utterances_matter=True):      # If False, just return 'OK' for each utterance.
+        utterances_matter=False):      # If False, just return 'OK' for each utterance.
 
        # Write code to save the relevant information in variables
+       
        # local to this instance of the agent.
        # Game-type info can be in global variables.
-       print("Change this to return 'OK' when ready to test the method.")
-       return "Not-OK"
+
+       self.who_i_play = what_side_to_play
+       self.opponent_nickname = opponent_nickname
+       self.time_limit = expected_time_per_move
+       global GAME_TYPE
+       GAME_TYPE = game_type
+       print("Currently playing game type: ", game_type.long_name)
+       self.my_past_utterances = []
+       self.opponent_past_utterances = []
+       self.repeat_count = 0
+       self.utt_count = 0
+       if self.twin: self.utt_count = 5 # Offset the twin's utterances.
+       return "OK"
    
     # The core of your agent's ability should be implemented here:             
     def makeMove(self, currentState, currentRemark, timeLimit=10000):
@@ -70,8 +82,7 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
         # if the square is not forbidden or already occupied.
     
         newState = currentState # This is not allowed, and even if
-        # it were allowed, the newState should be a deep COPY of the old.
-    
+        # it were allowed, the newState should be a deep COPY of the old.    
         newRemark = "I need to think of something appropriate.\n" +\
         "Well, I guess I can say that this move is probably illegal."
 
@@ -87,7 +98,8 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
                 alpha = max(alpha, currV) # update alpha
 
         print("Returning from makeMove")
-        return [[a_default_move, newState], newRemark]
+        return [[maxAction, newState], newRemark]
+    
 
     # The main adversarial search function:
     def minimax(self,
@@ -134,10 +146,18 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
             beta = min(beta, v)
         return v
  
+
+    #we look at each line and look at how many x's have k-l in a row (as long as l is
+    # less than k),
+    #Also look at how many handicapped spots
+    #(might not b good) look at number of positions where we can block a k in a row
     def staticEval(self, state):
         print('calling staticEval. Its value needs to be computed!')
         # Values should be higher when the states are better for X,+
         # lower when better for O.
+        print ("hello",state.board)
+        
+        
         
         return 0
     

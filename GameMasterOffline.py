@@ -12,6 +12,7 @@ from time import sleep
 USE_HTML = True
 if USE_HTML: import gameToHTML
 
+from achen47_katzhang_KInARow import OurAgent
 from winTesterForK import winTesterForK
 
 from game_types import TTT, FIAR, Cassini
@@ -176,7 +177,7 @@ def test():
     # Stand-alone test
     print("Starting stand-alone test of GameMaster.py")
     # Edit this to change what version of K-in-a-Row is used.
-    set_game(TTT) # default is Tic-Tac-Toe
+    set_game(FIAR) # default is Tic-Tac-Toe
     #set_game(FIAR) # Five in a Row
     # Import 1 or 2 agent files here.
     # If using only 1, create 2 instances of it, one of
