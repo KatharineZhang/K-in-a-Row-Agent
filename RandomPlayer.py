@@ -49,7 +49,7 @@ class OurAgent(KAgent):
        self.repeat_count = 0
        self.utt_count = 0
        if self.twin: self.utt_count = 5 # Offset the twin's utterances.
-
+       
        return "OK"
 
     def introduce(self):
