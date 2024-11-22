@@ -15,6 +15,7 @@ TO PROVIDE A GOOD STRUCTURE FOR YOUR IMPLEMENTATION.
 
 from agent_base import KAgent
 from game_types import State, Game_Type
+from winTesterForK import winTesterForK
 
 AUTHORS = 'Ailsa Chen and Katharine Zhang' 
 
@@ -90,13 +91,21 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
         beta = float('inf')
 
         maxV = float('-inf')
-        for successor, action in successors_and_moves(currentState):
-            currV = self.minimax( successor, 0, alpha, beta, 1 ) # the ghost plays next, with the first ghost being index = 1
+
+        depth = GAME_TYPE.k
+        maxAction = [0,0]
+        
+
+
+        for s_a_pair in successors_and_moves(newState):
+            successor = s_a_pair[0]
+            action = s_a_pair[1]
+            
+            currV = self.minimax( successor, depth, alpha, beta, 1 ) # the ghost plays next, with the first ghost being index = 1
             if currV > maxV:
                 maxV = currV
                 maxAction = action
                 alpha = max(alpha, currV) # update alpha
-
         print("Returning from makeMove")
         return [[maxAction, newState], newRemark]
     
@@ -109,11 +118,12 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
             beta=None,
             agentID=None):
         #pruning=False, zHashing=None
-        if depthRemaining == self.depth or state.isWin() or state.isLose():
-            return self.evaluationFunction(state)
-        if agentID == 0: # if max node/pacman layer
+
+        if depthRemaining == 0:
+            return self.staticEval(state)
+        if agentID == 0: 
             return self.maxValue(state, depthRemaining, alpha, beta, 0)
-        if agentID == 1: # if ghost/min node layer
+        if agentID == 1:
             return self.minValue(state, depthRemaining, alpha, beta, 1)
         return
         
@@ -121,8 +131,10 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
     def maxValue(self, state, depth, alpha, beta, agentID):
         v = float('-inf')
         
-        for successor, action in successors_and_moves(state):
-            currV = self.value(successor, depth, alpha, beta, 1) # ghost plays next!
+        for s_a_pair in successors_and_moves(state):
+            successor = s_a_pair[0]
+            action = s_a_pair[1]
+            currV = self.minimax(successor, depth, alpha, beta, 1) # ghost plays next!
             v = max(v, currV) # only update value if it's the max
             if v > beta:  # if value is greater than beta, we want to prune
                 return v
@@ -131,16 +143,12 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
 
     def minValue(self, state, depth, alpha, beta, agentID):
         v = float('inf')
-        agentsNum = state.getNumAgents()
 
-        for successor, action in successors_and_moves(state):
-            if agentID == agentsNum - 1: # currently on the last ghost, 
-                # so we want to go to the next layer, which is the max nodes/pacman layer
-                currV = self.value(successor, depth + 1 , alpha, beta, 0)
-                v = min(v, currV)
-            else: # still has ghosts left, so we need to explore the next ghost
-                currV = self.value(successor, depth, alpha, beta, 1) 
-                v = min(v, currV)
+        for s_a_pair in successors_and_moves(state):
+            successor = s_a_pair[0]
+            action = s_a_pair[1]
+            currV = self.minimax(successor, depth - 1 , alpha, beta, 0)
+            v = min(v, currV)
             if v < alpha:
                 return v
             beta = min(beta, v)
@@ -152,13 +160,43 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
     #Also look at how many handicapped spots
     #(might not b good) look at number of positions where we can block a k in a row
     def staticEval(self, state):
-        print('calling staticEval. Its value needs to be computed!')
-        # Values should be higher when the states are better for X,+
-        # lower when better for O.
-        print ("hello",state.board)
+        # Checking for Rows for X or O victory. 
+        board = state.board
+        for row in range(0, 3): 
         
+            if board[row][0] == board[row][1] and board[row][1] == board[row][2]: 
+            
+                if board[row][0] == 'X':
+                    return 10
+                elif board[row][0] == 'O': 
+                    return -10
+    
+        # Checking for Columns for X or O victory. 
+        for col in range(0, 3): 
         
+            if board[0][col] == board[1][col] and board[1][col] == board[2][col]: 
+            
+                if board[0][col]=='X':
+                    return 10
+                elif board[0][col] == 'O': 
+                    return -10
+    
+        # Checking for Diagonals for X or O victory. 
+        if board[0][0] == board[1][1] and board[1][1] == board[2][2]: 
         
+            if board[0][0] == 'X': 
+                return 10
+            elif board[0][0] == 'O': 
+                return -10
+        
+        if board[0][2] == board[1][1] and board[1][1] == board[2][0]: 
+        
+            if board[0][2] == 'X': 
+                return 10
+            elif board[0][2] == 'O': 
+                return -10
+        
+        # Else if none of them have won then return 0 
         return 0
     
     # getAll States
@@ -174,7 +212,7 @@ def other(p):
     return 'X'
 # simulates a single move
 def do_move(state, i, j, o):
-    news = Game_Type.State(old=state)
+    news = State(old=state)
     news.board[i][j] = state.whose_move
     news.whose_move = o
     return news
