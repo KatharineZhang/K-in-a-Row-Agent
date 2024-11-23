@@ -8,6 +8,7 @@
 
 '''
 
+import copy
 from time import sleep
 USE_HTML = True
 if USE_HTML: import gameToHTML

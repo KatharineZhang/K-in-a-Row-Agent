@@ -13,6 +13,7 @@ TO PROVIDE A GOOD STRUCTURE FOR YOUR IMPLEMENTATION.
 
 '''
 
+import copy
 from agent_base import KAgent
 from game_types import State, Game_Type
 from winTesterForK import winTesterForK
@@ -81,8 +82,9 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
         # Here's a placeholder:
         a_default_move = [0, 0] # This might be legal ONCE in a game,
         # if the square is not forbidden or already occupied.
+        newState = copy.deepcopy(currentState)
     
-        newState = currentState # This is not allowed, and even if
+        #newState = currentState # This is not allowed, and even if
         # it were allowed, the newState should be a deep COPY of the old.    
         newRemark = "I need to think of something appropriate.\n" +\
         "Well, I guess I can say that this move is probably illegal."
@@ -98,9 +100,12 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
 
 
         for s_a_pair in successors_and_moves(newState):
+            print(type(s_a_pair[0]))
+            print("s,a pair:", s_a_pair[0])
             successor = s_a_pair[0]
             action = s_a_pair[1]
             
+            print("s,a,pair again: ", type(successor))
             currV = self.minimax( successor, depth, alpha, beta, 1 ) # the ghost plays next, with the first ghost being index = 1
             if currV > maxV:
                 maxV = currV
@@ -119,8 +124,13 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
             agentID=None):
         #pruning=False, zHashing=None
 
+        print("in minMax:", type(state))
         if depthRemaining == 0:
-            return self.staticEval(state)
+            print("in depthRemaining,", type(state))
+            value = self.staticEval(state)
+            print("after staticEval, ", value)
+            print("after staticEval,", type(state))
+            return value
         if agentID == 0: 
             return self.maxValue(state, depthRemaining, alpha, beta, 0)
         if agentID == 1:
@@ -134,6 +144,7 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
         for s_a_pair in successors_and_moves(state):
             successor = s_a_pair[0]
             action = s_a_pair[1]
+            print("inside maxVal:", type(successor))
             currV = self.minimax(successor, depth, alpha, beta, 1) # ghost plays next!
             v = max(v, currV) # only update value if it's the max
             if v > beta:  # if value is greater than beta, we want to prune
@@ -145,8 +156,10 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
         v = float('inf')
 
         for s_a_pair in successors_and_moves(state):
+            
             successor = s_a_pair[0]
             action = s_a_pair[1]
+            print("inside minValue:", type(successor))
             currV = self.minimax(successor, depth - 1 , alpha, beta, 0)
             v = min(v, currV)
             if v < alpha:
@@ -155,17 +168,27 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
         return v
  
 
-    #we look at each line and look at how many x's have k-l in a row (as long as l is
-    # less than k),
-    #Also look at how many handicapped spots
-    #(might not b good) look at number of positions where we can block a k in a row
+
+    #?Additional factors: We want to check how many X's are in a row and weight differently
+    #? If k-1 X's in a row, have a greater penalty than if we have like k-4 in a row or something
+    #? Can model this after WE2, with 100,10 and 1 weights
+    
     def staticEval(self, state):
         # Checking for Rows for X or O victory. 
-        board = state.board
-        for row in range(0, 3): 
+        newState = copy.deepcopy(state)
+        board = newState.board
+
+
+        print("TYPE OF STATE",type(state))
+        print("THIS IS THE STATE", dir(state))
+        print(hasattr(state, 'board'))
         
+        #!Note: Not sure if range is always going to be 0-3 since it's k in a row
+        #!Note: Also probably shouldn't hardcode the indices because of dynamic sizing
+
+        #Check each row for an X Victory
+        for row in range(0, 3): 
             if board[row][0] == board[row][1] and board[row][1] == board[row][2]: 
-            
                 if board[row][0] == 'X':
                     return 10
                 elif board[row][0] == 'O': 
@@ -218,6 +241,7 @@ def do_move(state, i, j, o):
     return news
 # Gets all successors and their associated moves/actions given the current state
 def successors_and_moves(state):
+    print("in successor and moves: ", type(state))
     b = state.board
     p = state.whose_move
     o = other(p)
@@ -232,6 +256,7 @@ def successors_and_moves(state):
             news = do_move(state, i, j, o)
             new_states.append(news)
             moves.append([i, j])
+    print("at end of s/m:", type(new_states[0]))
     return [new_states, moves]
 
    
