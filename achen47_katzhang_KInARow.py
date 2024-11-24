@@ -77,7 +77,6 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
     def makeMove(self, currentState, currentRemark, timeLimit=10000):
         print("makeMove has been called")
 
-        print("code to compute a good move should go here.")
         # Here's a placeholder:
         a_default_move = [0, 0] # This might be legal ONCE in a game,
         # if the square is not forbidden or already occupied.
@@ -93,15 +92,13 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
         maxV = float('-inf')
 
         depth = GAME_TYPE.k
-        maxAction = [0,0]
+        maxAction = [0,0]   
         
-
-
         for s_a_pair in successors_and_moves(newState):
             successor = s_a_pair[0]
             action = s_a_pair[1]
             
-            currV = self.minimax( successor, depth, alpha, beta, 1 ) # the ghost plays next, with the first ghost being index = 1
+            currV = self.minimax(successor, depth, alpha, beta, 1 )
             if currV > maxV:
                 maxV = currV
                 maxAction = action
@@ -118,7 +115,7 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
             beta=None,
             agentID=None):
         #pruning=False, zHashing=None
-
+        print("Current state \n", state)
         if depthRemaining == 0:
             return self.staticEval(state)
         if agentID == 0: 
@@ -129,27 +126,33 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
         
 
     def maxValue(self, state, depth, alpha, beta, agentID):
+        print("MAX IS CALLED \n")
         v = float('-inf')
         
         for s_a_pair in successors_and_moves(state):
             successor = s_a_pair[0]
+            # print("Max state:", successor)
             action = s_a_pair[1]
             currV = self.minimax(successor, depth, alpha, beta, 1) # ghost plays next!
             v = max(v, currV) # only update value if it's the max
             if v > beta:  # if value is greater than beta, we want to prune
+                print("entered if statement")
                 return v
             alpha = max(alpha, v) # update alpha if it's value is > than it
         return v 
 
     def minValue(self, state, depth, alpha, beta, agentID):
+        print("MIN IS CALLED \n")
         v = float('inf')
 
         for s_a_pair in successors_and_moves(state):
             successor = s_a_pair[0]
+            print("Min state:\n", successor)
             action = s_a_pair[1]
             currV = self.minimax(successor, depth - 1 , alpha, beta, 0)
             v = min(v, currV)
             if v < alpha:
+                print("entered if statement")
                 return v
             beta = min(beta, v)
         return v
@@ -230,6 +233,7 @@ def successors_and_moves(state):
         for j in range(mCols):
             if b[i][j] != ' ': continue
             news = do_move(state, i, j, o)
+            print("New state:\n", news)
             new_states.append(news)
             moves.append([i, j])
     return [new_states, moves]
