@@ -236,7 +236,14 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
             return 0 <= r < n and 0 <= c < m
 
         # Helper function to check if a line (row, column, diagonal) can form a win
-        def check_line(row, col, directionRow, directionCol, player):
+        line_cache = {}
+
+        def get_line(r, c, dr, dc, player):
+            # Check cache first
+            if (r, c, dr, dc, player) in line_cache:
+                return line_cache[(r, c, dr, dc, player)]
+            
+            # Otherwise compute and store the result
             count = 0
             open_ends = 0
             for i in range(k):
@@ -248,7 +255,9 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
                     elif board[newR][newC] == ' ':
                         open_ends += 1
                 else:
-                    return (0, 0)  # out of bounds
+                    line_cache[(r, c, dr, dc, player)] = (0, 0)  # Out of bounds
+                    return (0, 0)
+            line_cache[(r, c, dr, dc, player)] = (count, open_ends)
             return (count, open_ends)
 
         # Evaluate every potential line for both players
@@ -261,8 +270,11 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
 
                 # Check all possible directions for lines of length k
                 for dr, dc in directions:
-                    count_x, open_ends_x_line = check_line(r, c, dr, dc, 'X')
-                    count_o, open_ends_o_line = check_line(r, c, dr, dc, 'O')
+                    count_x, open_ends_x_line = get_line(r, c, dr, dc, 'X')
+                    count_o, open_ends_o_line = get_line(r, c, dr, dc, 'O')
+
+                    # Use the values directly in your heuristics
+
 
                     # Heuristics for 'X'
                     if count_x > 0:  # 'X' has a potential win
@@ -294,9 +306,10 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
 
                 # **Win-In-One Move Threat Heuristic**: Check if 'X' or 'O' can win in the next move
                 for dirRow, dirCol in directions:
-                    count_x, open_ends_x_line = check_line(r, c, dirRow, dirCol, 'X')
-                    count_o, open_ends_o_line = check_line(r, c, dirRow, dirCol, 'O')
+                    count_x, open_ends_x_line = get_line(r, c, dr, dc, 'X')
+                    count_o, open_ends_o_line = get_line(r, c, dr, dc, 'O')
 
+                    # Use the values directly in your heuristics
                     if count_x == k - 1 and open_ends_x_line == 1:
                         x_one_move_away += 1
                     if count_o == k - 1 and open_ends_o_line == 1:
