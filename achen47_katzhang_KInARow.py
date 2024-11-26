@@ -146,6 +146,7 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
             action = s_a_pair[1]
             print("inside maxVal:", type(successor))
             currV = self.minimax(successor, depth, alpha, beta, 1) # ghost plays next!
+            print("after self eval in maxVal,", type(successor))
             v = max(v, currV) # only update value if it's the max
             if v > beta:  # if value is greater than beta, we want to prune
                 return v
@@ -161,6 +162,7 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
             action = s_a_pair[1]
             print("inside minValue:", type(successor))
             currV = self.minimax(successor, depth - 1 , alpha, beta, 0)
+            print("after self eval in maxVal,", type(successor))
             v = min(v, currV)
             if v < alpha:
                 return v
@@ -175,17 +177,19 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
     
     def staticEval(self, state):
         # Checking for Rows for X or O victory. 
-        newState = copy.deepcopy(state)
-        board = newState.board
+        print("type of state before:", type(state))
+       
 
 
         print("TYPE OF STATE",type(state))
-        print("THIS IS THE STATE", dir(state))
+       # print("THIS IS THE STATE", dir(state))
         print(hasattr(state, 'board'))
+        board = state.board
         
         #!Note: Not sure if range is always going to be 0-3 since it's k in a row
         #!Note: Also probably shouldn't hardcode the indices because of dynamic sizing
 
+        return 0
         #Check each row for an X Victory
         for row in range(0, 3): 
             if board[row][0] == board[row][1] and board[row][1] == board[row][2]: 
