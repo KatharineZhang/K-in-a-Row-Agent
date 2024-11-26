@@ -127,14 +127,15 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
             # print("after staticEval,", type(state))
             return value
         if agentID == 0: 
-            return self.maxValue(state, depthRemaining, alpha, beta, 0)
+            return self.maxValue(state, depthRemaining - 1, alpha, beta, 0)
         if agentID == 1:
-            return self.minValue(state, depthRemaining, alpha, beta, 1)
+            return self.minValue(state, depthRemaining - 1, alpha, beta, 1)
         return
         
 
     def maxValue(self, state, depth, alpha, beta, agentID):
         print("MAX IS CALLED \n")
+        print("AGENTID", agentID)
         v = float('-inf')
         s_a_pair = successors_and_moves(state)
         for i in range(0, len(s_a_pair[0])):
@@ -142,7 +143,7 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
             # print("Max state:", successor)
             action = s_a_pair[1][i]
             # print("inside maxVal:", type(successor))
-            currV = self.minimax(successor, depth, alpha, beta, 1) # ghost plays next!
+            currV = self.minimax(successor, depth - 1, alpha, beta, 1) # ghost plays next!
             print("after self eval in maxVal,", type(successor))
             v = max(v, currV) # only update value if it's the max
             if v > beta:  # if value is greater than beta, we want to prune
@@ -153,6 +154,7 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
 
     def minValue(self, state, depth, alpha, beta, agentID):
         print("MIN IS CALLED \n")
+        print("AGENTID", agentID)
         v = float('inf')
 
         s_a_pair = successors_and_moves(state)
@@ -161,7 +163,7 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
             # print("Max state:", successor)
             action = s_a_pair[1][i]
             # print("inside minValue:", type(successor))
-            currV = self.minimax(successor, depth - 1 , alpha, beta, 0)
+            currV = self.minimax(successor, depth - 1, alpha, beta, 0)
             print("after self eval in maxVal,", type(successor))
             v = min(v, currV)
             if v < alpha:
@@ -191,6 +193,7 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
 
         return 0
         #Check each row for an X Victory
+        board = state.board
         for row in range(0, 3): 
             if board[row][0] == board[row][1] and board[row][1] == board[row][2]: 
                 if board[row][0] == 'X':
