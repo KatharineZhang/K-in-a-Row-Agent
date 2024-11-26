@@ -37,8 +37,8 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
 
     def __init__(self, twin=False):
         self.twin=twin
-        self.nickname = 'Regina George'
-        if twin: self.nickname += 'Opponent'
+        self.nickname = 'Regina Bored'
+        if twin: self.nickname += ' Opponent'
         self.long_name = 'The Queen of K-In-A-Row'
         if twin: self.long_name += ' II'
         self.persona = 'Sassy teenager, like Regina George, who uses a lot of slang and is rude'
@@ -81,7 +81,7 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
        self.repeat_count = 0
        self.utt_count = 0
        if self.twin: self.utt_count = 5 # Offset the twin's utterances.
-       return "OK"
+       return "Ready!"
    
     # The core of your agent's ability should be implemented here:             
     def makeMove(self, currentState, currentRemark, timeLimit=10000):
@@ -90,11 +90,7 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
         # Here's a placeholder:
         a_default_move = [0, 0] # This might be legal ONCE in a game,
         # if the square is not forbidden or already occupied.
-        newState = copy.deepcopy(currentState)
-     
-        newRemark = "I need to think of something appropriate.\n" +\
-        "Well, I guess I can say that this move is probably illegal."
-        
+        newState = copy.deepcopy(currentState)      
 
         alpha = float('-inf')
         beta = float('inf')
@@ -250,8 +246,8 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
             count = 0
             open_ends = 0
             for i in range(k):
-                newR = row + i * directionRow
-                newC = col + i * directionCol
+                newR = r + i * dr
+                newC = c + i * dc
                 if in_bounds(newR, newC):
                     if board[newR][newC] == player:
                         count += 1
