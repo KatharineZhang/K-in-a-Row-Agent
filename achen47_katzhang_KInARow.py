@@ -96,7 +96,7 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
         depth = GAME_TYPE.k
         maxAction = [0,0]   
         
-        s_a_pair = successors_and_moves(currentState)
+        s_a_pair = successors_and_moves(newState)
         for i in range(0, len(s_a_pair[0])):
             successor = s_a_pair[0][i]
             # print("Max state:", successor)
