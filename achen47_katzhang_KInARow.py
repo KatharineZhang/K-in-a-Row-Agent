@@ -43,14 +43,14 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
         if twin: self.long_name += ' II'
         self.persona = 'Sassy teenager, like Regina George, who uses a lot of slang and is rude'
         if twin:
-            self.persona = ''
+            self.persona = 'Sassy, mature woman, like Elle Woods, with more professional and mature language'
         self.voice_info = {'Chrome': 10, 'Firefox': 2, 'other': 0}
         self.playing = "X" # e.g., "X" or "O". X - ID = 0, O - ID = 1
 
     def introduce(self):
-        intro = '\nMy name is Templatus Skeletus.\n'+\
-            '"An instructor" made me.\n'+\
-            'Somebody please turn me into a real game-playing agent!\n'
+        intro = '\nMy name is Reginald George.\n'+\
+            'If my name sounds familiar to a certain character,\n'+\
+            'you are just wrong... because im an original\n'
         if self.twin: intro += "By the way, I'm the TWIN.\n"
         return intro
 
@@ -85,7 +85,7 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
    
     # The core of your agent's ability should be implemented here:             
     def makeMove(self, currentState, currentRemark, timeLimit=10000):
-        # print("makeMove has been called")
+        print("makeMove has been called")
 
         # Here's a placeholder:
         a_default_move = [0, 0] # This might be legal ONCE in a game,
@@ -111,6 +111,7 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
             # print("Max state:", successor)
             action = s_a_pair[1][i]
             # print("action", action)
+            print("call minimax")
             currV = self.minimax(successor, depth, alpha, beta, 1 )
             # print("currV", currV)
             if currV > maxV:
@@ -210,6 +211,7 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
     #? Can model this after WE2, with 100,10 and 1 weights
     
     def staticEval(self, state):
+        print("in static eval")
         board = state.board
         n = len(board)        # Number of rows
         m = len(board[0])     # Number of columns
@@ -225,6 +227,7 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
         o_pieces = 0
         center_control = 0
         block_threat_score = 0
+        
 
         # Define directions for rows, columns, and diagonals
         directions = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (1, 1), (-1, 1), (1, -1)]
