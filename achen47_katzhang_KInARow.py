@@ -204,20 +204,22 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
         directions = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (1, 1), (-1, 1), (1, -1)]
 
         # Helper function to check if a position is within bounds
+        # r - row
+        # c - col
         def in_bounds(r, c):
             return 0 <= r < n and 0 <= c < m
 
         # Helper function to check if a line (row, column, diagonal) can form a win
-        def check_line(r, c, dr, dc, player):
+        def check_line(row, col, directionRow, directionCol, player):
             count = 0
             open_ends = 0
             for i in range(k):
-                nr = r + i * dr
-                nc = c + i * dc
+                newR = row + i * directionRow
+                newC = col + i * directionCol
                 if in_bounds(nr, nc):
-                    if board[nr][nc] == player:
+                    if board[newR][newC] == player:
                         count += 1
-                    elif board[nr][nc] == '.':
+                    elif board[newR][newC] == ' ':
                         open_ends += 1
                 else:
                     return (0, 0)  # out of bounds
@@ -265,9 +267,9 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
                         o_score += 1
 
                 # **Win-In-One Move Threat Heuristic**: Check if 'X' or 'O' can win in the next move
-                for dr, dc in directions:
-                    count_x, open_ends_x_line = check_line(r, c, dr, dc, 'X')
-                    count_o, open_ends_o_line = check_line(r, c, dr, dc, 'O')
+                for dirRow, dirCol in directions:
+                    count_x, open_ends_x_line = check_line(r, c, dirRow, dirCol, 'X')
+                    count_o, open_ends_o_line = check_line(r, c, dirRow, dirCol, 'O')
 
                     if count_x == k - 1 and open_ends_x_line == 1:
                         x_one_move_away += 1
@@ -278,7 +280,7 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
         piece_density = x_pieces - o_pieces
 
         # Closing board evaluation (whether the board is near being filled up)
-        filled_cells = sum(1 for row in board for cell in row if cell != '.')
+        filled_cells = sum(1 for row in board for cell in row if cell != ' ')
         remaining_cells = n * m - filled_cells
 
         if remaining_cells == 1:
