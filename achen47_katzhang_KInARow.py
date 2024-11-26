@@ -102,16 +102,16 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
             successor = s_a_pair[0][i]
             # print("Max state:", successor)
             action = s_a_pair[1][i]
-            print("action", action)
+            # print("action", action)
             currV = self.minimax(successor, depth, alpha, beta, 1 )
-            print("currV", currV)
+            # print("currV", currV)
             if currV > maxV:
                 maxV = currV
                 maxAction = action
                 maxSucc = successor
                 alpha = max(alpha, currV) # update alpha
-        print("Returning from makeMove")
-        print("optimal move:", [[maxAction, maxSucc], newRemark])
+        # print("Returning from makeMove")
+        # print("optimal move:", [[maxAction, maxSucc], newRemark])
         return [[maxAction, maxSucc], newRemark]
     
 
@@ -184,52 +184,122 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
     #? Can model this after WE2, with 100,10 and 1 weights
     
     def staticEval(self, state):
-        # Checking for Rows for X or O victory. 
-        #print("type of state before:", type(state))
-       
-
-
-        # print("TYPE OF STATE",type(state))  
-        # print("THIS IS THE STATE", dir(state))
-        # print(hasattr(state, 'board'))
-
-        return 0
-        #Check each row for an X Victory
         board = state.board
-        for row in range(0, 3): 
-            if board[row][0] == board[row][1] and board[row][1] == board[row][2]: 
-                if board[row][0] == 'X':
-                    return 10
-                elif board[row][0] == 'O': 
-                    return -10
-    
-        # Checking for Columns for X or O victory. 
-        for col in range(0, 3): 
+        n = len(board)        # Number of rows
+        m = len(board[0])     # Number of columns
+        k = GAME_TYPE.k          # Number of marks in a row to win
+
+        x_score = 0
+        o_score = 0
+        open_ends_x = 0
+        open_ends_o = 0
+        x_one_move_away = 0
+        o_one_move_away = 0
+        x_pieces = 0
+        o_pieces = 0
+        center_control = 0
+        block_threat_score = 0
+
+        # Define directions for rows, columns, and diagonals
+        directions = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (1, 1), (-1, 1), (1, -1)]
+
+        # Helper function to check if a position is within bounds
+        def in_bounds(r, c):
+            return 0 <= r < n and 0 <= c < m
+
+        # Helper function to check if a line (row, column, diagonal) can form a win
+        def check_line(r, c, dr, dc, player):
+            count = 0
+            open_ends = 0
+            for i in range(k):
+                nr = r + i * dr
+                nc = c + i * dc
+                if in_bounds(nr, nc):
+                    if board[nr][nc] == player:
+                        count += 1
+                    elif board[nr][nc] == '.':
+                        open_ends += 1
+                else:
+                    return (0, 0)  # out of bounds
+            return (count, open_ends)
+
+        # Evaluate every potential line for both players
+        for r in range(n):
+            for c in range(m):
+                if board[r][c] == 'X':
+                    x_pieces += 1
+                elif board[r][c] == 'O':
+                    o_pieces += 1
+
+                # Check all possible directions for lines of length k
+                for dr, dc in directions:
+                    count_x, open_ends_x_line = check_line(r, c, dr, dc, 'X')
+                    count_o, open_ends_o_line = check_line(r, c, dr, dc, 'O')
+
+                    # Heuristics for 'X'
+                    if count_x > 0:  # 'X' has a potential win
+                        x_score += (count_x * count_x)
+                    if open_ends_x_line > 0:
+                        open_ends_x += open_ends_x_line
+
+                    # Heuristics for 'O'
+                    if count_o > 0:  # 'O' has a potential win
+                        o_score -= (count_o * count_o)
+                    if open_ends_o_line > 0:
+                        open_ends_o += open_ends_o_line
+
+                    # **Block and Threat Heuristic**: Block opponent's potential win
+                    if count_o == k - 1 and open_ends_o_line == 1:  # 'O' is one move away from winning
+                        block_threat_score -= 5  # Reward block for 'X' player
+                    if count_x == k - 1 and open_ends_x_line == 1:  # 'X' is one move away from winning
+                        block_threat_score += 5  # Reward 'X' player for threatening to win
+
+                # **Center and Edge Control Heuristic**: Increase score for controlling the center
+                if (r, c) == (n//2, m//2):
+                    center_control += 1 if board[r][c] == 'X' else -1
+                # Increase score for occupying edges or corners
+                elif r in [0, n-1] or c in [0, m-1]:
+                    if board[r][c] == 'X':
+                        x_score += 1
+                    elif board[r][c] == 'O':
+                        o_score += 1
+
+                # **Win-In-One Move Threat Heuristic**: Check if 'X' or 'O' can win in the next move
+                for dr, dc in directions:
+                    count_x, open_ends_x_line = check_line(r, c, dr, dc, 'X')
+                    count_o, open_ends_o_line = check_line(r, c, dr, dc, 'O')
+
+                    if count_x == k - 1 and open_ends_x_line == 1:
+                        x_one_move_away += 1
+                    if count_o == k - 1 and open_ends_o_line == 1:
+                        o_one_move_away += 1
+
+        # Evaluate based on piece density
+        piece_density = x_pieces - o_pieces
+
+        # Closing board evaluation (whether the board is near being filled up)
+        filled_cells = sum(1 for row in board for cell in row if cell != '.')
+        remaining_cells = n * m - filled_cells
+
+        if remaining_cells == 1:
+            if piece_density > 0:
+                x_score += 10
+            else:
+                o_score -= 10
+
+        # Final evaluation combining all factors
+        eval_score = (
+            x_score - o_score
+            + open_ends_x - open_ends_o
+            + piece_density * 2
+            + x_one_move_away - o_one_move_away
+            + center_control
+            + block_threat_score
+        )
+
+        return eval_score
+
         
-            if board[0][col] == board[1][col] and board[1][col] == board[2][col]: 
-            
-                if board[0][col]=='X':
-                    return 10
-                elif board[0][col] == 'O': 
-                    return -10
-    
-        # Checking for Diagonals for X or O victory. 
-        if board[0][0] == board[1][1] and board[1][1] == board[2][2]: 
-        
-            if board[0][0] == 'X': 
-                return 10
-            elif board[0][0] == 'O': 
-                return -10
-        
-        if board[0][2] == board[1][1] and board[1][1] == board[2][0]: 
-        
-            if board[0][2] == 'X': 
-                return 10
-            elif board[0][2] == 'O': 
-                return -10
-        
-        # Else if none of them have won then return 0 
-        return 0
     
 
 # determines which player it is - X or O
