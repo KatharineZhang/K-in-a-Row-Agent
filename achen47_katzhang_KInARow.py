@@ -17,6 +17,13 @@ import copy
 from agent_base import KAgent
 from game_types import State, Game_Type
 from winTesterForK import winTesterForK
+import google.generativeai as genai
+import os
+from dotenv import load_dotenv, dotenv_values 
+# loading variables from .env file
+load_dotenv() 
+
+genai.configure(api_key=os.getenv("API_KEY"))
 
 AUTHORS = 'Ailsa Chen and Katharine Zhang' 
 
@@ -30,11 +37,11 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
 
     def __init__(self, twin=False):
         self.twin=twin
-        self.nickname = 'Nic'
-        if twin: self.nickname += '2'
-        self.long_name = 'Templatus Skeletus'
+        self.nickname = 'Regina George'
+        if twin: self.nickname += 'Opponent'
+        self.long_name = 'The Queen of K-In-A-Row'
         if twin: self.long_name += ' II'
-        self.persona = 'bland'
+        self.persona = 'sassy'
         self.voice_info = {'Chrome': 10, 'Firefox': 2, 'other': 0}
         self.playing = "X" # e.g., "X" or "O". X - ID = 0, O - ID = 1
 
@@ -54,7 +61,7 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
         opponent_nickname,
         expected_time_per_move = 0.1, # Time limits can be
                                       # changed mid-game by the game master.
-        utterances_matter=False):      # If False, just return 'OK' for each utterance.
+        utterances_matter=True):      # If False, just return 'OK' for each utterance.
 
        # Write code to save the relevant information in variables
        
@@ -82,11 +89,10 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
         a_default_move = [0, 0] # This might be legal ONCE in a game,
         # if the square is not forbidden or already occupied.
         newState = copy.deepcopy(currentState)
-    
-        #newState = currentState # This is not allowed, and even if
-        # it were allowed, the newState should be a deep COPY of the old.    
+     
         newRemark = "I need to think of something appropriate.\n" +\
         "Well, I guess I can say that this move is probably illegal."
+        
 
         alpha = float('-inf')
         beta = float('inf')
@@ -112,7 +118,17 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
                 alpha = max(alpha, currV) # update alpha
         # print("Returning from makeMove")
         # print("optimal move:", [[maxAction, maxSucc], newRemark])
-        return [[maxAction, maxSucc], newRemark]
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        if currV == 0:
+            response = response = model.generate_content("Write a sassy, angry, one-sentence response as Regina George losing a tic tac toe game.").text
+        elif currV < 10:
+            response = model.generate_content("Write a sassy, taunting, one sentence remark as Regina George winning tic tac toe").text
+        else:
+            response = model.generate_content("Write a sassy remark about the tic tac toe game currently, as Regina Georege, in one sentence only").text
+        
+        #print(response.text)
+        
+        return [[maxAction, maxSucc], response]
     
 
     # The main adversarial search function:
@@ -216,7 +232,7 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
             for i in range(k):
                 newR = row + i * directionRow
                 newC = col + i * directionCol
-                if in_bounds(nr, nc):
+                if in_bounds(newR, newC):
                     if board[newR][newC] == player:
                         count += 1
                     elif board[newR][newC] == ' ':
