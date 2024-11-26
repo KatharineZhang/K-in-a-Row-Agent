@@ -96,18 +96,18 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
         depth = GAME_TYPE.k
         maxAction = [0,0]   
         
-        for s_a_pair in successors_and_moves(newState):
-            print(type(s_a_pair[0]))
-            print("s,a pair:", s_a_pair[0])
-            successor = s_a_pair[0]
-            action = s_a_pair[1]
+        s_a_pair = successors_and_moves(currentState)
+        for i in range(0, len(s_a_pair[0])):
+            successor = s_a_pair[0][i]
+            # print("Max state:", successor)
+            action = s_a_pair[1][i]
             
             currV = self.minimax(successor, depth, alpha, beta, 1 )
             if currV > maxV:
                 maxV = currV
                 maxAction = action
                 alpha = max(alpha, currV) # update alpha
-        print("Returning from makeMove")
+        # print("Returning from makeMove")
         return [[maxAction, newState], newRemark]
     
 
@@ -121,10 +121,10 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
         #pruning=False, zHashing=None
         print("Current state \n", state)
         if depthRemaining == 0:
-            print("in depthRemaining,", type(state))
+            # print("in depthRemaining,", type(state))
             value = self.staticEval(state)
-            print("after staticEval, ", value)
-            print("after staticEval,", type(state))
+            # print("after staticEval, ", value)
+            # print("after staticEval,", type(state))
             return value
         if agentID == 0: 
             return self.maxValue(state, depthRemaining, alpha, beta, 0)
@@ -136,16 +136,16 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
     def maxValue(self, state, depth, alpha, beta, agentID):
         print("MAX IS CALLED \n")
         v = float('-inf')
-        
-        for s_a_pair in successors_and_moves(state):
-            successor = s_a_pair[0]
+        s_a_pair = successors_and_moves(state)
+        for i in range(0, len(s_a_pair[0])):
+            successor = s_a_pair[0][i]
             # print("Max state:", successor)
-            action = s_a_pair[1]
-            print("inside maxVal:", type(successor))
+            action = s_a_pair[1][i]
+            # print("inside maxVal:", type(successor))
             currV = self.minimax(successor, depth, alpha, beta, 1) # ghost plays next!
             v = max(v, currV) # only update value if it's the max
             if v > beta:  # if value is greater than beta, we want to prune
-                print("entered if statement")
+                # print("entered if statement")
                 return v
             alpha = max(alpha, v) # update alpha if it's value is > than it
         return v 
@@ -154,16 +154,16 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
         print("MIN IS CALLED \n")
         v = float('inf')
 
-        for s_a_pair in successors_and_moves(state):
-            
-            successor = s_a_pair[0]
-            print("Min state:\n", successor)
-            action = s_a_pair[1]
-            print("inside minValue:", type(successor))
+        s_a_pair = successors_and_moves(state)
+        for i in range(0, len(s_a_pair[0])):
+            successor = s_a_pair[0][i]
+            # print("Max state:", successor)
+            action = s_a_pair[1][i]
+            # print("inside minValue:", type(successor))
             currV = self.minimax(successor, depth - 1 , alpha, beta, 0)
             v = min(v, currV)
             if v < alpha:
-                print("entered if statement")
+                # print("entered if statement")
                 return v
             beta = min(beta, v)
         return v
@@ -180,9 +180,9 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
         board = newState.board
 
 
-        print("TYPE OF STATE",type(state))
-        print("THIS IS THE STATE", dir(state))
-        print(hasattr(state, 'board'))
+        # print("TYPE OF STATE",type(state))  
+        # print("THIS IS THE STATE", dir(state))
+        # print(hasattr(state, 'board'))
         
         #!Note: Not sure if range is always going to be 0-3 since it's k in a row
         #!Note: Also probably shouldn't hardcode the indices because of dynamic sizing
@@ -242,7 +242,7 @@ def do_move(state, i, j, o):
     return news
 # Gets all successors and their associated moves/actions given the current state
 def successors_and_moves(state):
-    print("in successor and moves: ", type(state))
+    # print("in successor and moves: ", type(state))
     b = state.board
     p = state.whose_move
     o = other(p)
@@ -255,10 +255,10 @@ def successors_and_moves(state):
         for j in range(mCols):
             if b[i][j] != ' ': continue
             news = do_move(state, i, j, o)
-            print("New state:\n", news)
+            # print("New state:\n", news)
             new_states.append(news)
             moves.append([i, j])
-    print("at end of s/m:", type(new_states[0]))
+    # print("at end of s/m:", type(new_states[0]))
     return [new_states, moves]
 
    
