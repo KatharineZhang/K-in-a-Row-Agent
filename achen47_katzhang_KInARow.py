@@ -41,7 +41,9 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
         if twin: self.nickname += 'Opponent'
         self.long_name = 'The Queen of K-In-A-Row'
         if twin: self.long_name += ' II'
-        self.persona = 'sassy'
+        self.persona = 'Sassy teenager, like Regina George, who uses a lot of slang and is rude'
+        if twin:
+            self.persona = ''
         self.voice_info = {'Chrome': 10, 'Firefox': 2, 'other': 0}
         self.playing = "X" # e.g., "X" or "O". X - ID = 0, O - ID = 1
 
@@ -119,13 +121,21 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
         # print("Returning from makeMove")
         # print("optimal move:", [[maxAction, maxSucc], newRemark])
         model = genai.GenerativeModel("gemini-1.5-flash")
-        if currV == 0:
-            response = response = model.generate_content("Write a sassy, angry, one-sentence response as Regina George losing a tic tac toe game.").text
-        elif currV < 10:
-            response = model.generate_content("Write a sassy, taunting, one sentence remark as Regina George winning tic tac toe").text
+        if not self.twin:
+            if currV == 0:
+                response = model.generate_content("Write a sassy, angry, one-sentence response as Regina George losing a tic tac toe game.").text
+            elif currV < 10:
+                response = model.generate_content("Write a sassy, taunting, one sentence remark as Regina George winning tic tac toe").text
+            else:
+                response = model.generate_content("Write a sassy remark about the tic tac toe game currently, as Regina Georege, in one sentence only").text
         else:
-            response = model.generate_content("Write a sassy remark about the tic tac toe game currently, as Regina Georege, in one sentence only").text
-        
+            if currV == 0:
+                response = model.generate_content("Write a shy, disappointed, one-sentence response as a fluttershy losing a tic tac toe game.").text
+            elif currV < 100:
+                response = model.generate_content("Write a shy, happy, one sentence remark as fluttershy winning tic tac toe").text
+            else:
+                response = model.generate_content("Write a shy, extremely happy, one-sentence remark about a tic tac toe game").text
+            
         #print(response.text)
         
         return [[maxAction, maxSucc], response]
