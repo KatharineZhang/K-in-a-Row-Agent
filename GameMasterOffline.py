@@ -96,6 +96,7 @@ def runGame():
     printState(currentState)
     while not FINISHED:
         who = currentState.whose_move
+        print("whos move:", who);
         if XsTurn:
             playerResult = player1.makeMove(currentState, currentRemark, TIME_PER_MOVE)
             name = player1.nickname

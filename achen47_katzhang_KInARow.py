@@ -76,7 +76,7 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
    
     # The core of your agent's ability should be implemented here:             
     def makeMove(self, currentState, currentRemark, timeLimit=10000):
-        print("makeMove has been called")
+        # print("makeMove has been called")
 
         # Here's a placeholder:
         a_default_move = [0, 0] # This might be legal ONCE in a game,
@@ -97,18 +97,22 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
         maxAction = [0,0]   
         
         s_a_pair = successors_and_moves(newState)
+        maxSucc = s_a_pair[0][0]
         for i in range(0, len(s_a_pair[0])):
             successor = s_a_pair[0][i]
             # print("Max state:", successor)
             action = s_a_pair[1][i]
-            
+            print("action", action)
             currV = self.minimax(successor, depth, alpha, beta, 1 )
+            print("currV", currV)
             if currV > maxV:
                 maxV = currV
                 maxAction = action
+                maxSucc = successor
                 alpha = max(alpha, currV) # update alpha
-        # print("Returning from makeMove")
-        return [[maxAction, newState], newRemark]
+        print("Returning from makeMove")
+        print("optimal move:", [[maxAction, maxSucc], newRemark])
+        return [[maxAction, maxSucc], newRemark]
     
 
     # The main adversarial search function:
@@ -119,23 +123,23 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
             beta=None,
             agentID=None):
         #pruning=False, zHashing=None
-        print("Current state \n", state)
+        # print("Current state \n", state)
         if depthRemaining == 0:
             # print("in depthRemaining,", type(state))
             value = self.staticEval(state)
-            # print("after staticEval, ", value)
+            #print("after staticEval, ", value)
             # print("after staticEval,", type(state))
             return value
         if agentID == 0: 
-            return self.maxValue(state, depthRemaining - 1, alpha, beta, 0)
+            return self.maxValue(state, depthRemaining, alpha, beta, 0)
         if agentID == 1:
-            return self.minValue(state, depthRemaining - 1, alpha, beta, 1)
+            return self.minValue(state, depthRemaining, alpha, beta, 1)
         return
         
 
     def maxValue(self, state, depth, alpha, beta, agentID):
-        print("MAX IS CALLED \n")
-        print("AGENTID", agentID)
+        # print("MAX IS CALLED \n")
+        # print("AGENTID", agentID)
         v = float('-inf')
         s_a_pair = successors_and_moves(state)
         for i in range(0, len(s_a_pair[0])):
@@ -144,7 +148,7 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
             action = s_a_pair[1][i]
             # print("inside maxVal:", type(successor))
             currV = self.minimax(successor, depth - 1, alpha, beta, 1) # ghost plays next!
-            print("after self eval in maxVal,", type(successor))
+            # print("after self eval in maxVal,", type(successor))
             v = max(v, currV) # only update value if it's the max
             if v > beta:  # if value is greater than beta, we want to prune
                 # print("entered if statement")
@@ -153,8 +157,8 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
         return v 
 
     def minValue(self, state, depth, alpha, beta, agentID):
-        print("MIN IS CALLED \n")
-        print("AGENTID", agentID)
+        # print("MIN IS CALLED \n")
+        # print("AGENTID", agentID)
         v = float('inf')
 
         s_a_pair = successors_and_moves(state)
@@ -164,7 +168,8 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
             action = s_a_pair[1][i]
             # print("inside minValue:", type(successor))
             currV = self.minimax(successor, depth - 1, alpha, beta, 0)
-            print("after self eval in maxVal,", type(successor))
+            #print("after self eval in maxVal,", type(successor))
+            #print("currV inside minVal:", currV)
             v = min(v, currV)
             if v < alpha:
                 # print("entered if statement")
@@ -180,16 +185,13 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
     
     def staticEval(self, state):
         # Checking for Rows for X or O victory. 
-        print("type of state before:", type(state))
+        #print("type of state before:", type(state))
        
 
 
         # print("TYPE OF STATE",type(state))  
         # print("THIS IS THE STATE", dir(state))
         # print(hasattr(state, 'board'))
-        
-        #!Note: Not sure if range is always going to be 0-3 since it's k in a row
-        #!Note: Also probably shouldn't hardcode the indices because of dynamic sizing
 
         return 0
         #Check each row for an X Victory
@@ -229,12 +231,6 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
         # Else if none of them have won then return 0 
         return 0
     
-    # getAll States
-    # getNextState based on action: how to do this?????? for success, action in successors_and_moves(state):
-    # get all actions
-    # use game_types change_turn function
-    # define your own agentID
-
 
 # determines which player it is - X or O
 def other(p):
