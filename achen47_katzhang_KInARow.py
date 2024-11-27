@@ -43,13 +43,15 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
         if twin: self.long_name += ' II'
         self.persona = 'Sassy teenager, like Regina George, who uses a lot of slang and is rude'
         if twin:
-            self.persona = ''
+            self.persona = 'Sassy, mature woman, like Elle Woods, with more professional and mature language'
         self.voice_info = {'Chrome': 10, 'Firefox': 2, 'other': 0}
         self.playing = "X" # e.g., "X" or "O". X - ID = 0, O - ID = 1
 
     def introduce(self):
-        intro = '\nINTRO'
-        if self.twin: intro += "I'm the TWIN\n"
+        intro = '\nMy name is Reginald George.\n'+\
+            'If my name sounds familiar to a certain character,\n'+\
+            'you are just wrong... because im an original\n'
+        if self.twin: intro += "By the way, I'm the TWIN.\n"
         return intro
 
     # Receive and acknowledge information about the game from
@@ -83,7 +85,6 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
    
     # The core of your agent's ability should be implemented here:             
     def makeMove(self, currentState, currentRemark, timeLimit=10000):
-        # print("makeMove has been called")
 
         # Here's a placeholder:
         a_default_move = [0, 0] # This might be legal ONCE in a game,
@@ -95,7 +96,7 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
 
         maxV = float('-inf')
 
-        depth = GAME_TYPE.k
+        depth = int(GAME_TYPE.k / 2)
         maxAction = [0,0]   
         
         s_a_pair = successors_and_moves(newState)
@@ -114,25 +115,25 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
                 alpha = max(alpha, currV) # update alpha
         # print("Returning from makeMove")
         # print("optimal move:", [[maxAction, maxSucc], newRemark])
-        model = genai.GenerativeModel("gemini-1.5-flash")
-        if not self.twin:
-            if currV == 0:
-                response = model.generate_content("Write a sassy, angry, one-sentence response as Regina George losing a tic tac toe game.").text
-            elif currV < 10:
-                response = model.generate_content("Write a sassy, taunting, one sentence remark as Regina George winning tic tac toe").text
-            else:
-                response = model.generate_content("Write a sassy remark about the tic tac toe game currently, as Regina Georege, in one sentence only").text
-        else:
-            if currV == 0:
-                response = model.generate_content("Write a shy, disappointed, one-sentence response as a fluttershy losing a tic tac toe game.").text
-            elif currV < 100:
-                response = model.generate_content("Write a shy, happy, one sentence remark as fluttershy winning tic tac toe").text
-            else:
-                response = model.generate_content("Write a shy, extremely happy, one-sentence remark about a tic tac toe game").text
+        # model = genai.GenerativeModel("gemini-1.5-flash")
+        # if not self.twin:
+        #     if currV == 0:
+        #         response = model.generate_content("Write a sassy, angry, one-sentence response as Regina George losing a tic tac toe game.").text
+        #     elif currV < 10:
+        #         response = model.generate_content("Write a sassy, taunting, one sentence remark as Regina George winning tic tac toe").text
+        #     else:
+        #         response = model.generate_content("Write a sassy remark about the tic tac toe game currently, as Regina Georege, in one sentence only").text
+        # else:
+        #     if currV == 0:
+        #         response = model.generate_content("Write a shy, disappointed, one-sentence response as a fluttershy losing a tic tac toe game.").text
+        #     elif currV < 100:
+        #         response = model.generate_content("Write a shy, happy, one sentence remark as fluttershy winning tic tac toe").text
+        #     else:
+        #         response = model.generate_content("Write a shy, extremely happy, one-sentence remark about a tic tac toe game").text
             
         #print(response.text)
         
-        return [[maxAction, maxSucc], response]
+        return [[maxAction, maxSucc], "hello"]
     
 
     # The main adversarial search function:
@@ -170,7 +171,7 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
             currV = self.minimax(successor, depth - 1, alpha, beta, 1) # ghost plays next!
             # print("after self eval in maxVal,", type(successor))
             v = max(v, currV) # only update value if it's the max
-            if v > beta:  # if value is greater than beta, we want to prune
+            if v >= beta:  # if value is greater than beta, we want to prune
                 # print("entered if statement")
                 return v
             alpha = max(alpha, v) # update alpha if it's value is > than it
@@ -191,7 +192,7 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
             #print("after self eval in maxVal,", type(successor))
             #print("currV inside minVal:", currV)
             v = min(v, currV)
-            if v < alpha:
+            if v <= alpha:
                 # print("entered if statement")
                 return v
             beta = min(beta, v)
@@ -204,6 +205,7 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
     #? Can model this after WE2, with 100,10 and 1 weights
     
     def staticEval(self, state):
+        # print("in static eval")
         board = state.board
         n = len(board)        # Number of rows
         m = len(board[0])     # Number of columns
@@ -219,6 +221,7 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
         o_pieces = 0
         center_control = 0
         block_threat_score = 0
+        
 
         # Define directions for rows, columns, and diagonals
         directions = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (1, 1), (-1, 1), (1, -1)]
@@ -274,40 +277,40 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
                     if count_x > 0:  # 'X' has a potential win
                         x_score += (count_x * count_x)
                     if open_ends_x_line > 0:
-                        open_ends_x += open_ends_x_line
+                        open_ends_x += open_ends_x_line * 5
 
                     # Heuristics for 'O'
                     if count_o > 0:  # 'O' has a potential win
                         o_score -= (count_o * count_o)
                     if open_ends_o_line > 0:
-                        open_ends_o += open_ends_o_line
+                        open_ends_o += open_ends_o_line * 5
 
                     # **Block and Threat Heuristic**: Block opponent's potential win
                     if count_o == k - 1 and open_ends_o_line == 1:  # 'O' is one move away from winning
-                        block_threat_score -= 5  # Reward block for 'X' player
+                        block_threat_score -= 100  # Reward block for 'X' player
                     if count_x == k - 1 and open_ends_x_line == 1:  # 'X' is one move away from winning
-                        block_threat_score += 5  # Reward 'X' player for threatening to win
+                        block_threat_score += 100  # Reward 'X' player for threatening to win
 
                 # **Center and Edge Control Heuristic**: Increase score for controlling the center
                 if (r, c) == (n//2, m//2):
-                    center_control += 1 if board[r][c] == 'X' else -1
+                    center_control += 80 if board[r][c] == 'X' else -80
                 # Increase score for occupying edges or corners
                 elif r in [0, n-1] or c in [0, m-1]:
                     if board[r][c] == 'X':
-                        x_score += 1
+                        x_score += 10
                     elif board[r][c] == 'O':
-                        o_score += 1
+                        o_score += 10
 
                 # **Win-In-One Move Threat Heuristic**: Check if 'X' or 'O' can win in the next move
-                for dirRow, dirCol in directions:
+                for dr, dc in directions:
                     count_x, open_ends_x_line = get_line(r, c, dr, dc, 'X')
                     count_o, open_ends_o_line = get_line(r, c, dr, dc, 'O')
 
                     # Use the values directly in your heuristics
                     if count_x == k - 1 and open_ends_x_line == 1:
-                        x_one_move_away += 1
+                        x_one_move_away += 500
                     if count_o == k - 1 and open_ends_o_line == 1:
-                        o_one_move_away += 1
+                        o_one_move_away += 500
 
         # Evaluate based on piece density
         piece_density = x_pieces - o_pieces
@@ -318,9 +321,9 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
 
         if remaining_cells == 1:
             if piece_density > 0:
-                x_score += 10
+                x_score += 50
             else:
-                o_score -= 10
+                o_score -= 50
 
         # Final evaluation combining all factors
         eval_score = (

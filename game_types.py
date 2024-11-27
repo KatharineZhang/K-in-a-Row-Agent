@@ -67,17 +67,18 @@ class Game_Type:
         return text
         
 TTT_INITIAL_STATE_DATA = \
-              [[[' ',' ',' '],
-                [' ',' ',' '],
-                [' ',' ',' ']], "X"]
+              [[[' ',' ',' ',' '],
+                [' ',' ',' ',' '],
+                [' ',' ',' ',' '],
+                [' ',' ',' ',' ']], "X"]
 
 TTT = Game_Type("Tic-Tac-Toe",
                  "TTT",
-                 3,
-                 3,
-                 3,
+                 4,
+                 4,
+                 4,
                  TTT_INITIAL_STATE_DATA,
-                 9,
+                 16,
                  1)
 
 FIVE_INITIAL_STATE_DATA = \
