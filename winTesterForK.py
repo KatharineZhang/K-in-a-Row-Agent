@@ -10,9 +10,7 @@
 def winTesterForK(s, move, k):
     board = s.board
     who = s.whose_move
-    # print("who in wintest", who)
     moveI, moveJ = move
-    # print("board in winTest", board)
     whoWent = board[moveI][moveJ]
     if not whoWent in ['X', 'O']:
         return "Invalid Player Token in Move: '"+whoWent+"'"

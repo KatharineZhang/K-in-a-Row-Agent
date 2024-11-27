@@ -189,7 +189,7 @@ def test():
     import achen47_katzhang_KInARow as agent
     import RandomPlayer as rAgent
     px = agent.OurAgent()
-    po = agent.OurAgent()
+    po = agent.OurAgent(twin = True)
     set_players(px, po)
     print("Players are set.")
     print("Now let's run the game.")

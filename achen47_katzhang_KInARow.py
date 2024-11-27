@@ -37,25 +37,21 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
 
     def __init__(self, twin=False):
         self.twin=twin
-        self.nickname = 'Reginald Gorge'
-        if twin: self.nickname += ' Opponent'
+        self.nickname = 'Reginald George'
+        if twin: self.nickname += ' the Twin'
         self.long_name = 'The Queen of K-In-A-Row'
         if twin: self.long_name += ' II'
-        self.persona = 'Sassy teenager, like Regina George, who uses a lot of slang and is rude'
+        self.persona = 'Sassy teenager, like Regina George, who uses a lot of 2000s slang, is passive aggressive, and rude'
         if twin:
             self.persona = 'Sassy, mature woman, like Elle Woods, with more professional and mature language'
         self.voice_info = {'Chrome': 10, 'Firefox': 2, 'other': 0}
         self.playing = "X" # e.g., "X" or "O". X - ID = 0, O - ID = 1
 
     def introduce(self):
-        intro = '\nHi, Im Regina George, and Im here to totally *crush* you at Tic Tac Toe.\n'+\
-        'Omg your agent is sooo fetch! But not as good as mine.\n'+\
-        'I mean, Im basically the queen of everything, so, yeah. Youre going down loser.\n'+\
-        'But dont worry, Ill let you have a few moves. You seem like you will need it.\n'+\
-        'Anyways, Im kind of busy so Ill give you some advice:\n'+\
-        'Im going to win.\n'+\
-        'Anyways, toodaloo honey!'
-        if self.twin: intro += "By the way, I'm the TWIN.\n"
+        intro = '\nHi, Im Reginald George, and Im here to totally *crush* you at K-in-a-row!.\n'+\
+        'But dont worry, Ill let you have a few moves. You seem like you will need it.\n'
+        if self.twin: 
+            intro = '\nHi, Im Reginald George \'s Twin, and I play to win darling. You\'re no match for my wits!\n'
         return intro
 
     # Receive and acknowledge information about the game from
@@ -121,8 +117,15 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
         model = genai.GenerativeModel("gemini-1.5-flash")
         
         #fix the conditionals for this
-        # response = model.generate_content("Write a sassy, angry, one-sentence response as Regina George losing a tic tac toe game.").text
-        response = "test"
+        if maxV <= 0:
+            response = model.generate_content("Write a one-sentence remark to being in a losing position for a  k-in-a-row game with this tone:" + self.persona).text
+        elif maxV >= 100000:
+            response = model.generate_content("Write a one-sentence remark to having an advantage in a k-in-a-row game with this tone:" + self.persona).text
+        else:
+            response = model.generate_content("Write a one-sentence remark to the other player a  k-in-a-row game with this tone:" + self.persona).text
+        
+        
+        # response = "test"
         
         return [[maxAction, maxSucc], response]
     
@@ -137,10 +140,8 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
         #pruning=False, zHashing=None
         # print("Current state \n", state)
         if depthRemaining == 0:
-            # print("in depthRemaining,", type(state))
             value = self.staticEval(state)
-            #print("after staticEval, ", value)
-            # print("after staticEval,", type(state))
+            # print("after staticEval, ", value)
             return value
         if agentID == 0: 
             return self.maxValue(state, depthRemaining, alpha, beta, 0)
@@ -229,6 +230,7 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
         
         return score
 
+
     def evaluateLine(self, line):
         """
         Helper function to evaluate a single line (row, column, or diagonal).
@@ -249,17 +251,26 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
             cell = line[i]
             if cell == 'X':
                 x_count += 1
-                # o_count = 0
+                o_count = 0
                 max_x_count = max(max_x_count,x_count)
-                # while i+1 < len(line) and line [i+1] == '':
-                #     x_empty+=5
-            elif cell == 'O':
+                
+            #this is supposed to check like if the blank spaces are next to X bc x_ should be worth more than like xo_
+            #it also represents a potential completion of the line
+            
+            # if cell == 'X' and i+1 < len(line) and line[i+1] == ' ':
+            #     x_empty += 1
+            #     x_count = 0
+            #     o_count = 0
+            if cell == 'O':
                 o_count += 1
-                # x_count = 0
+                x_count = 0
                 max_o_count = max(max_o_count,o_count)
-                # while i+1 < len(line) and line [i+1] == '':
-                #     o_empty+=5
-            elif cell == ' ':
+                
+            # if cell == 'O' and i+1 < len(line) and line[i+1] == ' ':
+            #     o_empty += 1
+            #     o_count = 0
+            #     x_count = 0
+            if cell == ' ':
                 o_count = 0
                 x_count = 0
             
@@ -268,10 +279,10 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
         score = 0
         
         # Win-by-one-move heuristic for 'X' (agent can win in one move)
-        # if x_count + x_empty == k:
-        #     score += 10
-        # if o_count + o_empty == k:
-        #     score -= 10
+        if x_count + x_empty == k:
+            score += x_empty * 10
+        if o_count + o_empty == k:
+            score -= o_empty * 10
         
         if x_count == k - 1:
             return 100000 # Reward 'X' for winning in the next move
@@ -290,159 +301,13 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
         # Evaluate line based on possible future plays
         if x_count > 0:
             score += x_count * 10  # Positive score for consecutive 'X'
-            score += x_empty *2
+            # score += x_empty *2
         if o_count > 0:
             score -= o_count * 10  # Negative score for consecutive 'O'
-            score += o_empty *2
-        
-        # Factor in the empty spaces (potential for completing the line)
-        # if empty_count > 0:
-        #     score += empty_count * 2  # Encourage completing the line
+            # score += o_empty *2
+
         
         return score
-
-
-    #?Additional factors: We want to check how many X's are in a row and weight differently
-    #? If k-1 X's in a row, have a greater penalty than if we have like k-4 in a row or something
-    #? Can model this after WE2, with 100,10 and 1 weights
-    
-    # def staticEval(self, state):
-    #     # print("in static eval")
-    #     board = state.board
-    #     n = len(board)        # Number of rows
-    #     m = len(board[0])     # Number of columns
-    #     k = GAME_TYPE.k          # Number of marks in a row to win
-
-    #     x_score = 0
-    #     o_score = 0
-    #     open_ends_x = 0
-    #     open_ends_o = 0
-    #     x_one_move_away = 0
-    #     o_one_move_away = 0
-    #     x_pieces = 0
-    #     o_pieces = 0
-    #     center_control = 0
-    #     block_threat_score = 0
-        
-
-    #     # Define directions for rows, columns, and diagonals
-    #     directions = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (1, 1), (-1, 1), (1, -1)]
-
-    #     # Helper function to check if a position is within bounds
-    #     # r - row
-    #     # c - col
-    #     def in_bounds(r, c):
-    #         return 0 <= r < n and 0 <= c < m
-
-    #     # Helper function to check if a line (row, column, diagonal) can form a win
-    #     line_cache = {}
-
-    #     def get_line(r, c, dr, dc, player):
-    #         # Check cache first
-    #         if (r, c, dr, dc, player) in line_cache:
-    #             return line_cache[(r, c, dr, dc, player)]
-            
-    #         # Otherwise compute and store the result
-    #         count = 0
-    #         open_ends = 0
-    #         for i in range(k):
-    #             newR = r + i * dr
-    #             newC = c + i * dc
-    #             if in_bounds(newR, newC):
-    #                 if board[newR][newC] == player:
-    #                     count += 1
-    #                 elif board[newR][newC] == ' ':
-    #                     open_ends += 1
-    #             else:
-    #                 line_cache[(r, c, dr, dc, player)] = (0, 0)  # Out of bounds
-    #                 return (0, 0)
-    #         line_cache[(r, c, dr, dc, player)] = (count, open_ends)
-    #         return (count, open_ends)
-
-    #     # Evaluate every potential line for both players
-    #     for r in range(n):
-    #         for c in range(m):
-    #             if board[r][c] == 'X':
-    #                 x_pieces += 1
-    #             elif board[r][c] == 'O':
-    #                 o_pieces += 1
-
-    #             # # **Win-In-One Move Threat Heuristic**: Check if 'X' or 'O' can win in the next move
-    #             # for dr, dc in directions:
-    #             #     count_x, open_ends_x_line = get_line(r, c, dr, dc, 'X')
-    #             #     count_o, open_ends_o_line = get_line(r, c, dr, dc, 'O')
-
-    #             #     # Use the values directly in your heuristics
-    #             #     if count_x == k - 1 and open_ends_x_line == 1:
-    #             #         x_one_move_away += 1000
-    #             #     if count_o == k - 1 and open_ends_o_line == 1:
-    #             #         o_one_move_away += 1000
-
-    #             # Check all possible directions for lines of length k
-    #             for dr, dc in directions:
-    #                 count_x, open_ends_x_line = get_line(r, c, dr, dc, 'X')
-    #                 count_o, open_ends_o_line = get_line(r, c, dr, dc, 'O')
-
-    #                 # Use the values directly in your heuristics
-
-
-    #                 # Heuristics for 'X'
-    #                 if count_x > 0:  # 'X' has a potential win
-    #                     x_score += (count_x * count_x)
-    #                 if open_ends_x_line > 0:
-    #                     open_ends_x += open_ends_x_line * 5
-
-    #                 # Heuristics for 'O'
-    #                 if count_o > 0:  # 'O' has a potential win
-    #                     o_score -= (count_o * count_o)
-    #                 if open_ends_o_line > 0:
-    #                     open_ends_o += open_ends_o_line * 5
-
-    #                 # **Block and Threat Heuristic**: Block opponent's potential win
-    #                 if count_o == k - 1 and open_ends_o_line == 1:  # 'O' is one move away from winning
-    #                     block_threat_score -= 100  # Reward block for 'X' player
-    #                 if count_x == k - 1 and open_ends_x_line == 1:  # 'X' is one move away from winning
-    #                     block_threat_score += 100  # Reward 'X' player for threatening to win
-
-    #             # **Center and Edge Control Heuristic**: Increase score for controlling the center
-    #             if (r, c) == (n//2, m//2):
-    #                 center_control += 100 if board[r][c] == 'X' else -100
-    #             # Increase score for occupying edges or corners
-    #             elif r in [0, n-1] or c in [0, m-1]:
-    #                 if board[r][c] == 'X':
-    #                     x_score += 20
-    #                 elif board[r][c] == 'O':
-    #                     o_score += 20
-
-                
-
-    #     # Evaluate based on piece density
-    #     piece_density = x_pieces - o_pieces
-
-    #     # Closing board evaluation (whether the board is near being filled up)
-    #     filled_cells = sum(1 for row in board for cell in row if cell != ' ')
-    #     remaining_cells = n * m - filled_cells
-
-    #     if remaining_cells == 1:
-    #         if piece_density > 0:
-    #             x_score += 50
-    #         else:
-    #             o_score -= 50
-
-    #     # Final evaluation combining all factors
-    #     eval_score = (
-    #         x_score - o_score
-    #         + open_ends_x - open_ends_o
-    #         + piece_density * 2
-    #         + x_one_move_away - o_one_move_away
-    #         + center_control
-    #         + block_threat_score * 2
-    #     )
-
-    #     # print("end")
-    #     return eval_score
-
-        
     
 
 # determines which player it is - X or O
