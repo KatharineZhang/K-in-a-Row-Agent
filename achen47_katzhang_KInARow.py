@@ -100,8 +100,8 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
 
         maxV = float('-inf')
 
-        depth = GAME_TYPE.k
-        # depth = int(GAME_TYPE.k / 2)
+        # depth = GAME_TYPE.k
+        depth = int(GAME_TYPE.k / 2)
         maxAction = [0,0]   
         
         s_a_pair = successors_and_moves(newState)
@@ -119,37 +119,10 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
                 maxSucc = successor
                 alpha = max(alpha, currV) # update alpha
         model = genai.GenerativeModel("gemini-1.5-flash")
-        if not self.twin:
-            if currV == 0:
-                response = model.generate_content("Write a sassy, angry, one-sentence response as Regina George losing a tic tac toe game.").text
-            elif currV < 10:
-                response = model.generate_content("Write a sassy, taunting, one sentence remark as Regina George winning tic tac toe").text
-            else:
-                response = model.generate_content("Write a sassy remark about the tic tac toe game currently, as Regina Georege, in one sentence only").text
-        else:
-            if currV == 0:
-                response = model.generate_content("Write a shy, disappointed, one-sentence response as a fluttershy losing a tic tac toe game.").text
-            elif currV < 100:
-                response = model.generate_content("Write a shy, happy, one sentence remark as fluttershy winning tic tac toe").text
-            else:
-                response = model.generate_content("Write a shy, extremely happy, one-sentence remark about a tic tac toe game").text
-        model = genai.GenerativeModel("gemini-1.5-flash")
-        if not self.twin:
-            if currV == 0:
-                response = model.generate_content("Write a sassy, angry, one-sentence response as Regina George losing a tic tac toe game.").text
-            elif currV < 10:
-                response = model.generate_content("Write a sassy, taunting, one sentence remark as Regina George winning tic tac toe").text
-            else:
-                response = model.generate_content("Write a sassy remark about the tic tac toe game currently, as Regina Georege, in one sentence only").text
-        else:
-            if currV == 0:
-                response = model.generate_content("Write a shy, disappointed, one-sentence response as a fluttershy losing a tic tac toe game.").text
-            elif currV < 100:
-                response = model.generate_content("Write a shy, happy, one sentence remark as fluttershy winning tic tac toe").text
-            else:
-                response = model.generate_content("Write a shy, extremely happy, one-sentence remark about a tic tac toe game").text
-            
-        print(response)
+        
+        #fix the conditionals for this
+        # response = model.generate_content("Write a sassy, angry, one-sentence response as Regina George losing a tic tac toe game.").text
+        response = "test"
         
         return [[maxAction, maxSucc], response]
     
@@ -268,45 +241,63 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
         empty_count = 0  # Number of empty spaces
         x_empty = 0  # Number of empty spaces for 'X' to complete a line
         o_empty = 0  # Number of empty spaces for 'O' to complete a line
+        max_x_count = 0
+        max_o_count = 0
         
         # Count 'X', 'O' and empty spaces in the line
-        for cell in line:
+        for i in range(len(line)):
+            cell = line[i]
             if cell == 'X':
                 x_count += 1
+                # o_count = 0
+                max_x_count = max(max_x_count,x_count)
+                # while i+1 < len(line) and line [i+1] == '':
+                #     x_empty+=5
             elif cell == 'O':
                 o_count += 1
+                # x_count = 0
+                max_o_count = max(max_o_count,o_count)
+                # while i+1 < len(line) and line [i+1] == '':
+                #     o_empty+=5
             elif cell == ' ':
-                empty_count += 1
-                x_empty += 5  # Potential for 'X' to complete a line
-                o_empty += 5  # Potential for 'O' to complete a line
+                o_count = 0
+                x_count = 0
             
-        
+        x_count= max_x_count
+        o_count = max_o_count
         score = 0
         
         # Win-by-one-move heuristic for 'X' (agent can win in one move)
-        if x_count == k - 1 and x_empty == 1:
-            score += 100  # Reward 'X' for winning in the next move
+        # if x_count + x_empty == k:
+        #     score += 10
+        # if o_count + o_empty == k:
+        #     score -= 10
+        
+        if x_count == k - 1:
+            return 100000 # Reward 'X' for winning in the next move
         
         # Win-by-one-move heuristic for 'O' (we need to block 'O' from winning in one move)
-        if o_count == k - 1 and o_empty == 1:
-            score -= 100 # Penalize for opponent's near win
+        if o_count == k - 1:
+            return -100000 # Penalize for opponent's near win
         
         # If line has k consecutive 'X', it's a win for 'X'
         if x_count == k:
-            return 1000  # High value for winning line of 'X'
+            return 10000000000000  # High value for winning line of 'X'
         # If line has k consecutive 'O', it's a win for 'O'
         elif o_count == k:
-            return -1000  # High negative value for winning line of 'O'
+            return -10000000000000  # High negative value for winning line of 'O'
         
         # Evaluate line based on possible future plays
         if x_count > 0:
             score += x_count * 10  # Positive score for consecutive 'X'
+            score += x_empty *2
         if o_count > 0:
             score -= o_count * 10  # Negative score for consecutive 'O'
+            score += o_empty *2
         
         # Factor in the empty spaces (potential for completing the line)
-        if empty_count > 0:
-            score += empty_count * 2  # Encourage completing the line
+        # if empty_count > 0:
+        #     score += empty_count * 2  # Encourage completing the line
         
         return score
 
