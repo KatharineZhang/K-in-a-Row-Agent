@@ -117,25 +117,25 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
                 alpha = max(alpha, currV) # update alpha
         # print("Returning from makeMove")
         # print("optimal move:", [[maxAction, maxSucc], newRemark])
-        model = genai.GenerativeModel("gemini-1.5-flash")
-        if not self.twin:
-            if currV == 0:
-                response = model.generate_content("Write a sassy, angry, one-sentence response as Regina George losing a tic tac toe game.").text
-            elif currV < 10:
-                response = model.generate_content("Write a sassy, taunting, one sentence remark as Regina George winning tic tac toe").text
-            else:
-                response = model.generate_content("Write a sassy remark about the tic tac toe game currently, as Regina Georege, in one sentence only").text
-        else:
-            if currV == 0:
-                response = model.generate_content("Write a shy, disappointed, one-sentence response as a fluttershy losing a tic tac toe game.").text
-            elif currV < 100:
-                response = model.generate_content("Write a shy, happy, one sentence remark as fluttershy winning tic tac toe").text
-            else:
-                response = model.generate_content("Write a shy, extremely happy, one-sentence remark about a tic tac toe game").text
+        # model = genai.GenerativeModel("gemini-1.5-flash")
+        # if not self.twin:
+        #     if currV == 0:
+        #         response = model.generate_content("Write a sassy, angry, one-sentence response as Regina George losing a tic tac toe game.").text
+        #     elif currV < 10:
+        #         response = model.generate_content("Write a sassy, taunting, one sentence remark as Regina George winning tic tac toe").text
+        #     else:
+        #         response = model.generate_content("Write a sassy remark about the tic tac toe game currently, as Regina Georege, in one sentence only").text
+        # else:
+        #     if currV == 0:
+        #         response = model.generate_content("Write a shy, disappointed, one-sentence response as a fluttershy losing a tic tac toe game.").text
+        #     elif currV < 100:
+        #         response = model.generate_content("Write a shy, happy, one sentence remark as fluttershy winning tic tac toe").text
+        #     else:
+        #         response = model.generate_content("Write a shy, extremely happy, one-sentence remark about a tic tac toe game").text
             
         #print(response.text)
         
-        return [[maxAction, maxSucc], response]
+        return [[maxAction, maxSucc], "hello"]
     
 
     # The main adversarial search function:
@@ -173,7 +173,7 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
             currV = self.minimax(successor, depth - 1, alpha, beta, 1) # ghost plays next!
             # print("after self eval in maxVal,", type(successor))
             v = max(v, currV) # only update value if it's the max
-            if v > beta:  # if value is greater than beta, we want to prune
+            if v >= beta:  # if value is greater than beta, we want to prune
                 # print("entered if statement")
                 return v
             alpha = max(alpha, v) # update alpha if it's value is > than it
@@ -194,7 +194,7 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
             #print("after self eval in maxVal,", type(successor))
             #print("currV inside minVal:", currV)
             v = min(v, currV)
-            if v < alpha:
+            if v <= alpha:
                 # print("entered if statement")
                 return v
             beta = min(beta, v)
@@ -207,7 +207,10 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
     #? Can model this after WE2, with 100,10 and 1 weights
     
     def staticEval(self, state):
-        print("in static eval")
+        # print("in static eval")
+        
+        return 0
+        
         board = state.board
         n = len(board)        # Number of rows
         m = len(board[0])     # Number of columns
@@ -337,6 +340,7 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
             + block_threat_score
         )
 
+        # print("end")
         return eval_score
 
         
@@ -374,12 +378,3 @@ def successors_and_moves(state):
     return [new_states, moves]
 
    
- 
-# OPTIONAL THINGS TO KEEP TRACK OF:
-
-#  WHO_MY_OPPONENT_PLAYS = other(WHO_I_PLAY)
-#  MY_PAST_UTTERANCES = []
-#  OPPONENT_PAST_UTTERANCES = []
-#  UTTERANCE_COUNT = 0
-#  REPEAT_COUNT = 0 or a table of these if you are reusing different utterances
-
