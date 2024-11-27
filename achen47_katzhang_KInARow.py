@@ -118,11 +118,11 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
         
         #fix the conditionals for this
         if maxV <= 0:
-            response = model.generate_content("Write a one-sentence remark to being in a losing position for a  k-in-a-row game with this tone:" + self.persona).text
+            response = model.generate_content("Write a 2-sentence max remark to being in a losing position for a  k-in-a-row game with this tone:" + self.persona).text
         elif maxV >= 100000:
-            response = model.generate_content("Write a one-sentence remark to having an advantage in a k-in-a-row game with this tone:" + self.persona).text
+            response = model.generate_content("Write a 2-sentence max remark to having a major advantage in a k-in-a-row game with this tone:" + self.persona).text
         else:
-            response = model.generate_content("Write a one-sentence remark to the other player a  k-in-a-row game with this tone:" + self.persona).text
+            response = model.generate_content("Write a 2-sentence max remark to the other player a  k-in-a-row game with this tone:" + self.persona).text
         
         
         # response = "test"
