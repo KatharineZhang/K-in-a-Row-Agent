@@ -188,7 +188,6 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
             # print("after self eval in maxVal,", type(successor))
             v = max(v, currV) # only update value if it's the max
             if v >= beta:  # if value is greater than beta, we want to prune
-            if v >= beta:  # if value is greater than beta, we want to prune
                 # print("entered if statement")
                 return v
             alpha = max(alpha, v) # update alpha if it's value is > than it
@@ -209,7 +208,6 @@ class OurAgent(KAgent):  # Keep the class name "OurAgent" so a game master
             #print("after self eval in maxVal,", type(successor))
             #print("currV inside minVal:", currV)
             v = min(v, currV)
-            if v <= alpha:
             if v <= alpha:
                 # print("entered if statement")
                 return v
